@@ -1,0 +1,58 @@
+name: Forge Meta Leads
+
+on:
+  workflow_dispatch:
+    inputs:
+      sweeps:
+        description: 'Max sweeps this run (default 6)'
+        required: false
+        default: '6'
+      deep:
+        description: 'Max deep-scrape batches (default 20)'
+        required: false
+        default: '20'
+      show_top:
+        description: 'Show top leads in logs (0/1)'
+        required: false
+        default: '1'
+  schedule:
+    - cron: '0 */6 * * *'
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Inject API keys from secrets
+        run: |
+          echo "APIFY_KEY0=${{ secrets.APIFY_KEY0 }}" >> $GITHUB_ENV
+          echo "APIFY_KEY1=${{ secrets.APIFY_KEY1 }}" >> $GITHUB_ENV
+          echo "APIFY_KEY2=${{ secrets.APIFY_KEY2 }}" >> $GITHUB_ENV
+          echo "APIFY_KEY3=${{ secrets.APIFY_KEY3 }}" >> $GITHUB_ENV
+          echo "APIFY_KEY4=${{ secrets.APIFY_KEY4 }}" >> $GITHUB_ENV
+          echo "APIFY_KEY5=${{ secrets.APIFY_KEY5 }}" >> $GITHUB_ENV
+          echo "APIFY_KEY6=${{ secrets.APIFY_KEY6 }}" >> $GITHUB_ENV
+
+      - name: Run lead engine
+        env:
+          MAX_SWEEPS_PER_RUN: ${{ github.event.inputs.sweeps || '6' }}
+          MAX_DEEP_BATCHES_PER_RUN: ${{ github.event.inputs.deep || '20' }}
+          SHOW_TOP: ${{ github.event.inputs.show_top || '1' }}
+        run: python3 forge_meta_master.py
+
+      - name: Commit results
+        run: |
+          git config user.name "forge-bot"
+          git config user.email "forge-bot@users.noreply.github.com"
+          git add forge_meta_master.json forge_meta_master.csv state.json forge_meta_snapshot_*.csv
+          git commit -m "Update forge meta leads [skip ci]" || echo "No changes to commit"
+          git push || echo "Push failed"
