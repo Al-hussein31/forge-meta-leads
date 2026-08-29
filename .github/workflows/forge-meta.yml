@@ -56,6 +56,6 @@ jobs:
         run: |
           git config user.name "forge-bot"
           git config user.email "forge-bot@users.noreply.github.com"
-          git add forge_meta_master.json forge_meta_master.csv state.json forge_meta_snapshot_*.csv
+          git add -A
           git commit -m "Update forge meta leads [skip ci]" || echo "No changes to commit"
           git push origin HEAD:main || echo "Push failed"
