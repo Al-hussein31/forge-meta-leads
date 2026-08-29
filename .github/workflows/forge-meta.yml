@@ -18,6 +18,9 @@ on:
   schedule:
     - cron: '0 */6 * * *'
 
+permissions:
+  contents: write
+
 jobs:
   scrape:
     runs-on: ubuntu-latest
@@ -55,4 +58,4 @@ jobs:
           git config user.email "forge-bot@users.noreply.github.com"
           git add forge_meta_master.json forge_meta_master.csv state.json forge_meta_snapshot_*.csv
           git commit -m "Update forge meta leads [skip ci]" || echo "No changes to commit"
-          git push || echo "Push failed"
+          git push origin HEAD:main || echo "Push failed"
